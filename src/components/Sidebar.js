@@ -132,7 +132,7 @@ export default function Sidebar({
               placeholder="Enter annotation"
             />
             <button
-              className="border-0 w-full p-1 rounded duration-300 hover:shadow-md bg-black text-white text-sm my-2 disabled:bg-gray-500"
+              className="border-0 w-full p-1 rounded duration-300 hover:shadow-md bg-black text-white text-sm mt-2 disabled:bg-gray-500 opacity-80 hover:opacity-100"
               onClick={() => onAnnotationApplyClick(annotateText)}
               disabled={annotateText.trim().length == 0}
             >
