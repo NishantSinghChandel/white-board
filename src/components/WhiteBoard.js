@@ -103,7 +103,9 @@ const WhiteBoard = ({ action, boardData }) => {
       {renderContent}
       <IconTrash
         onClick={handleClear}
-        className="duration-300 hover:text-rose-700 absolute  bottom-4 right-4 cursor-pointer"
+        className={`duration-300 hover:text-rose-700 absolute  bottom-4 right-4 cursor-pointer ${
+          content.length > 0 ? "scale-1" : "scale-0"
+        }`}
       />
     </div>
   );
