@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import WhiteBoard from "./components/WhiteBoard";
 import ActionButtons from "./components/ActionButtons";
 import { mockAIResponse } from "./services/mockApi";
 import Sidebar from "./components/Sidebar";
 import { useSelector } from "react-redux";
 import Navbar from "./components/Navbar";
+
 const App = () => {
   const [action, setAction] = useState(null);
   const [boardData, setBoardData] = useState({
@@ -15,39 +16,21 @@ const App = () => {
   });
   const theme = useSelector((state) => state.common.theme);
 
-  const triggerWrite = () => {
-    const response = mockAIResponse("WRITE");
+  const handleTriggerAction = useCallback((mode, additionalParams = {}) => {
+    const response = mockAIResponse(mode, additionalParams);
     setAction(response);
-  };
+  }, []);
 
-  const triggerAppend = () => {
-    const response = mockAIResponse("APPEND");
-    setAction(response);
-  };
+  const handleBoardDataChange = useCallback((key, value) => {
+    setBoardData((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
-  const triggerAnnotate = () => {
-    const response = mockAIResponse("ANNOTATE", {
-      regex: "Lorem Ipsum",
-      index: 0,
-    });
-    setAction(response);
-  };
-
-  const triggerCustomAnnotation = (text) => {
-    const response = mockAIResponse("CUSTOM_ANNOTATE", {
-      regex: text,
-      index: 0,
-    });
-    setAction(response);
-  };
-
-  const handleBoardDataChange = (key, value) => {
-    setBoardData({ ...boardData, [key]: value });
-  };
-
-  const handleAnnotationApplyClick = (text) => {
-    triggerCustomAnnotation(text);
-  };
+  const handleAnnotationApplyClick = useCallback(
+    (text) => {
+      handleTriggerAction("CUSTOM_ANNOTATE", { regex: text, index: 0 });
+    },
+    [handleTriggerAction]
+  );
 
   return (
     <main className={theme} style={{ height: "100vh" }}>
@@ -58,11 +41,16 @@ const App = () => {
           onAnnotationApplyClick={handleAnnotationApplyClick}
           boardData={boardData}
         />
-        <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
+        <div className="container mx-auto px-4 py-10 max-w-3xl">
           <ActionButtons
-            onWrite={triggerWrite}
-            onAppend={triggerAppend}
-            onAnnotate={triggerAnnotate}
+            onWrite={() => handleTriggerAction("WRITE")}
+            onAppend={() => handleTriggerAction("APPEND")}
+            onAnnotate={() =>
+              handleTriggerAction("ANNOTATE", {
+                regex: "Lorem Ipsum",
+                index: 0,
+              })
+            }
           />
           <WhiteBoard action={action} boardData={boardData} />
         </div>
