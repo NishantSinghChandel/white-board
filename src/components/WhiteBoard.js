@@ -41,7 +41,7 @@ const WhiteBoard = ({ action, boardData }) => {
           text: data[index],
           isAnnotate: false,
           color: textColor,
-        })
+        });
         setText([...textData]);
         index++;
       } else {
@@ -71,6 +71,7 @@ const WhiteBoard = ({ action, boardData }) => {
   const handleClear = () => {
     setAnnotations([]);
     setContent("");
+    setText([]);
   };
 
   // Optimize annotation lookups
@@ -104,14 +105,14 @@ const WhiteBoard = ({ action, boardData }) => {
   const getWord2 = () => {
     let result = [];
     let word = "";
-    text.forEach(( data , i) => {
+    text.forEach((data, i) => {
       const isAnnotated = annotatedMap.has(i);
       const char = data.text;
       if (isAnnotated) {
         word += char;
       } else {
         if (word.length > 1) {
-          result.push({ ...data, text: word, isAnnotate:true });
+          result.push({ ...data, text: word, isAnnotate: true });
           word = "";
         }
         result.push({ ...data, text: char });
