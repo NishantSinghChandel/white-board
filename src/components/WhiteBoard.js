@@ -4,8 +4,10 @@ import { RoughNotation } from "react-rough-notation";
 
 const WhiteBoard = ({ action, boardData }) => {
   const [content, setContent] = useState("");
+  const [text, setText] = useState([]);
   const [annotations, setAnnotations] = useState([]);
   const { annotationColor, textColor, annotationType } = boardData;
+  const [annotateList, setAnnotateList] = useState([]);
 
   const whiteboardRef = useRef(null);
 
@@ -29,11 +31,18 @@ const WhiteBoard = ({ action, boardData }) => {
     }
   }, [action]);
 
-  const handleWrite = (text, i = 0) => {
+  const handleWrite = (data, i = 0) => {
     let index = i;
     const interval = setInterval(() => {
-      if (index <= text.length) {
-        setContent(text.slice(0, index));
+      if (index <= data.length) {
+        setContent(data.slice(0, index));
+        let textData = text;
+        textData.push({
+          text: data[index],
+          isAnnotate: false,
+          color: textColor,
+        })
+        setText([...textData]);
         index++;
       } else {
         clearInterval(interval);
@@ -49,6 +58,8 @@ const WhiteBoard = ({ action, boardData }) => {
   const handleAnnotate = (regex, index) => {
     const matches = [...content.matchAll(new RegExp(regex, "g"))];
     if (matches.length > index) {
+      let data = matches[0][0];
+      setAnnotateList([...annotateList, data]);
       const match = matches[index];
       console.log(match, match.index);
       const start = match.index;
@@ -71,13 +82,77 @@ const WhiteBoard = ({ action, boardData }) => {
     return map;
   }, [annotations]);
 
-  // Render content with annotations
-  const renderContent = useMemo(() => {
-    return content.split("").map((char, i) => {
+  // const getWord = () => {
+  //   let result = [];
+  //   let word = "";
+  //   content.split("").forEach((char, i) => {
+  //     const isAnnotated = annotatedMap.has(i);
+  //     if (isAnnotated) {
+  //       word += char;
+  //     } else {
+  //       if (word.length > 1) {
+  //         result.push(word);
+  //         word = "";
+  //       }
+  //       result.push(char);
+  //     }
+  //     return "";
+  //   });
+  //   return result;
+  // };
+
+  const getWord2 = () => {
+    let result = [];
+    let word = "";
+    text.forEach(( data , i) => {
       const isAnnotated = annotatedMap.has(i);
+      const char = data.text;
+      if (isAnnotated) {
+        word += char;
+      } else {
+        if (word.length > 1) {
+          result.push({ ...data, text: word, isAnnotate:true });
+          word = "";
+        }
+        result.push({ ...data, text: char });
+      }
+      return "";
+    });
+    return result;
+  };
+
+  // Render content with annotations
+  // const renderContent = useMemo(() => {
+  //   let result = getWord();
+  //   let color = textColor;
+
+  //   return result.map((char, i) => {
+  //     const isAnnotated = annotateList.includes(char);
+
+  //     return (
+  //       <span key={i} style={{ color }}>
+  //         {isAnnotated ? (
+  //           <RoughNotation type={annotationType} color={annotationColor} show>
+  //             {char}
+  //           </RoughNotation>
+  //         ) : (
+  //           char
+  //         )}
+  //       </span>
+  //     );
+  //   });
+  // }, [content, annotatedMap, annotationType, annotationColor]);
+
+  const newRenderText = useMemo(() => {
+    let result = getWord2();
+
+    return result.map(({ text, color, isAnnotate }, i) => {
+      const char = text;
+      // const isAnnotated = annotateList.includes(char);
+
       return (
-        <span key={i}>
-          {isAnnotated ? (
+        <span key={i} style={{ color }}>
+          {isAnnotate ? (
             <RoughNotation type={annotationType} color={annotationColor} show>
               {char}
             </RoughNotation>
@@ -97,14 +172,14 @@ const WhiteBoard = ({ action, boardData }) => {
         fontFamily: "'Roboto', sans-serif",
         lineHeight: "1.6",
         whiteSpace: "pre-wrap",
-        color: textColor,
+        // color: textColor,
       }}
     >
-      {renderContent}
+      {newRenderText}
       <IconTrash
         onClick={handleClear}
-        className={`duration-300 hover:text-rose-700 absolute  bottom-4 right-4 cursor-pointer ${
-          content.length > 0 ? "scale-1" : "scale-0"
+        className={`duration-300 text-black hover:text-rose-700 absolute  bottom-4 right-4 cursor-pointer ${
+          text.length > 0 ? "scale-1" : "scale-0"
         }`}
       />
     </div>
